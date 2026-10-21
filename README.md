@@ -4,6 +4,25 @@ Aplicação web front-end para pesquisar cidades, consultar as condições meteo
 
 > Este README reúne todos os requisitos obrigatórios, regras de negócio, estados da interface, cenários de teste e desafios opcionais definidos no documento do projeto.
 
+## Como executar
+
+Pré-requisito: Node.js instalado.
+
+```bash
+npm install
+npm run dev
+```
+
+Outros comandos disponíveis:
+
+```bash
+npm run build      # valida os tipos e gera a versão de produção
+npm run typecheck  # verifica os tipos TypeScript
+npm run preview    # abre localmente a versão gerada pelo build
+```
+
+O projeto utiliza React, TypeScript e Vite.
+
 ## Sumário
 
 - [Objetivo](#objetivo)
