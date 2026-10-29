@@ -21,7 +21,7 @@ npm run typecheck  # verifica os tipos TypeScript
 npm run preview    # abre localmente a versão gerada pelo build
 ```
 
-O projeto utiliza React, TypeScript e Vite.
+O projeto utiliza React, TypeScript, Vite e Tailwind CSS.
 
 ## Sumário
 

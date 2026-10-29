@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+	--color-brand-50: #eff8ff;
+	--color-brand-100: #dbefff;
+	--color-brand-500: #0284c7;
+	--color-brand-600: #0369a1;
+	--color-brand-700: #075985;
+}
+
+@layer base {
+	body {
+		@apply min-w-80 bg-slate-100 text-slate-800 antialiased;
+	}
+
+	button,
+	input {
+		font: inherit;
+	}
+}
