@@ -59,7 +59,12 @@ export function FormCity() {
 				const data: ApiResponseType = await response.json();
 				setResults(data.results ?? []);
 			} catch (error) {
-				if (error instanceof Error && error.name === "AbortError") {
+				if (
+					typeof error === "object" &&
+					error !== null &&
+					"name" in error &&
+					error.name === "AbortError"
+				) {
 					return;
 				}
 

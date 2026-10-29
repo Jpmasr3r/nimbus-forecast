@@ -18,6 +18,7 @@ Outros comandos disponíveis:
 ```bash
 npm run build      # valida os tipos e gera a versão de produção
 npm run typecheck  # verifica os tipos TypeScript
+npm test           # executa os testes automatizados
 npm run preview    # abre localmente a versão gerada pelo build
 ```
 
