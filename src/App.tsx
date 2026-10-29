@@ -2,7 +2,7 @@ import { FormCity } from "./FormCity";
 
 export function App() {
 	return (
-		<div className="min-h-screen bg-[radial-gradient(circle_at_top,_#e0f2fe,_#f8fafc_42rem)]">
+		<div className="min-h-screen bg-[radial-gradient(circle_at_top,#e0f2fe,#f8fafc_42rem)]">
 			<header className="border-b border-white/30 bg-brand-700 px-6 py-12 text-center text-white shadow-sm sm:py-16">
 				<p className="mb-3 text-xs font-bold tracking-[0.2em] text-sky-200 uppercase">
 					Open-Meteo
