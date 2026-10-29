@@ -11,8 +11,11 @@ describe("City", () => {
 				id={42}
 				name="Charqueadas"
 				country="Brasil"
+				latitude={-29.95}
+				longitude={-51.62}
 				favorite={false}
 				onToggleFavorite={onToggleFavorite}
+				onSelect={vi.fn()}
 			/>,
 		);
 
@@ -21,10 +24,39 @@ describe("City", () => {
 
 		fireEvent.click(button);
 
-		expect(onToggleFavorite).toHaveBeenCalledWith({
+			expect(onToggleFavorite).toHaveBeenCalledWith({
+				id: 42,
+				name: "Charqueadas",
+				country: "Brasil",
+				latitude: -29.95,
+				longitude: -51.62,
+			});
+	});
+
+	it("envia todos os dados ao selecionar a cidade", () => {
+		const onSelect = vi.fn();
+
+		render(
+			<City
+				id={42}
+				name="Charqueadas"
+				country="Brasil"
+				latitude={-29.95}
+				longitude={-51.62}
+				favorite={false}
+				onToggleFavorite={vi.fn()}
+				onSelect={onSelect}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: /Charqueadas/i }));
+
+		expect(onSelect).toHaveBeenCalledWith({
 			id: 42,
 			name: "Charqueadas",
 			country: "Brasil",
+			latitude: -29.95,
+			longitude: -51.62,
 		});
 	});
 
@@ -34,8 +66,11 @@ describe("City", () => {
 				id={42}
 				name="Charqueadas"
 				country="Brasil"
+				latitude={-29.95}
+				longitude={-51.62}
 				favorite
 				onToggleFavorite={vi.fn()}
+				onSelect={vi.fn()}
 			/>,
 		);
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { CityModal } from "./CityModal";
 import { CityResults } from "./CityResult";
-import { getFavorites } from "./global/function";
+import { getFavorites, toggleFavorite } from "./global/function";
 import type { ApiResponseType, CityType } from "./global/types";
 
 const BASE_API = "https://geocoding-api.open-meteo.com/v1";
@@ -11,21 +12,15 @@ export function FormCity() {
 	const [favorites, setFavorites] = useState<CityType[]>(getFavorites);
 	const hasSearch = city.trim().length > 0;
 	const displayedCities = hasSearch ? results : favorites;
+	const [selectCity, setSelectCity] = useState<CityType | null>(null);
 
 	useEffect(() => {
 		localStorage.setItem("favoriteCities", JSON.stringify(favorites));
 	}, [favorites]);
 
-	function toggleFavorite(selectedCity: CityType): void {
+	function handleToggleFavorite(selectedCity: CityType): void {
 		setFavorites((currentFavorites) => {
-			const alreadyFavorite = currentFavorites.some(
-				(favorite) => favorite.id === selectedCity.id,
-			);
-			const updatedFavorites = alreadyFavorite
-				? currentFavorites.filter((favorite) => favorite.id !== selectedCity.id)
-				: [...currentFavorites, selectedCity];
-
-			return updatedFavorites;
+			return toggleFavorite(currentFavorites, selectedCity);
 		});
 	}
 
@@ -113,8 +108,14 @@ export function FormCity() {
 						? "Nenhuma cidade encontrada."
 						: "Você ainda não possui cidades favoritas."
 				}
-				onToggleFavorite={toggleFavorite}
+				onToggleFavorite={handleToggleFavorite}
+				onSelect={(select) => {
+					setSelectCity(select);
+				}}
 			/>
+			{selectCity && (
+				<CityModal {...selectCity} onClose={() => setSelectCity(null)} />
+			)}
 		</section>
 	);
 }

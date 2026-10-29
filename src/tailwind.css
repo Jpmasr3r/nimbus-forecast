@@ -18,3 +18,9 @@
 		font: inherit;
 	}
 }
+
+@layer components {
+	.city-modal::backdrop {
+		background-color: rgb(15 23 42 / 45%);
+	}
+}

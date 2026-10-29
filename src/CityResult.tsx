@@ -7,6 +7,7 @@ export function CityResults({
 	title,
 	emptyMessage,
 	onToggleFavorite,
+	onSelect,
 }: CityResultsProps) {
 	if (results.length === 0) {
 		return (
@@ -31,8 +32,11 @@ export function CityResults({
 						id={city.id}
 						name={city.name}
 						country={city.country}
+						latitude={city.latitude}
+						longitude={city.longitude}
 						favorite={favorites.some((favorite) => favorite.id === city.id)}
 						onToggleFavorite={onToggleFavorite}
+						onSelect={onSelect}
 					/>
 				))}
 			</div>

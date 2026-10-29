@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormCity } from "../src/FormCity";
 
@@ -6,12 +6,16 @@ const portoAlegre = {
 	id: 1,
 	name: "Porto Alegre",
 	country: "Brasil",
+	latitude: -30.03,
+	longitude: -51.23,
 };
 
 const lisboa = {
 	id: 2,
 	name: "Lisboa",
 	country: "Portugal",
+	latitude: 38.72,
+	longitude: -9.14,
 };
 
 function successfulResponse(results: unknown[]): Response {
@@ -145,5 +149,34 @@ describe("FormCity", () => {
 
 		expect(screen.getByText("Porto Alegre")).toBeInTheDocument();
 		expect(screen.queryByText("Lisboa")).not.toBeInTheDocument();
+	});
+
+	it("abre e fecha os detalhes da cidade selecionada", () => {
+		localStorage.setItem("favoriteCities", JSON.stringify([portoAlegre]));
+		render(<FormCity />);
+
+		fireEvent.click(screen.getByRole("button", { name: /Porto Alegre/i }));
+
+		const dialog = screen.getByRole("dialog");
+		expect(dialog).toBeInTheDocument();
+		expect(
+			within(dialog).getByRole("heading", { name: "Porto Alegre" }),
+		).toBeInTheDocument();
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Fechar detalhes da cidade" }),
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
+
+	it("fecha os detalhes ao clicar fora do conteúdo", () => {
+		localStorage.setItem("favoriteCities", JSON.stringify([portoAlegre]));
+		render(<FormCity />);
+
+		fireEvent.click(screen.getByRole("button", { name: /Porto Alegre/i }));
+		fireEvent.click(screen.getByRole("dialog"));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 });
