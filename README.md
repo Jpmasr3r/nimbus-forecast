@@ -271,3 +271,7 @@ O estado centralizado mantém os cartões, a lista de favoritos e o `localStorag
 ## Fonte dos dados
 
 Dados de geocodificação e meteorologia fornecidos por [Open-Meteo](https://open-meteo.com/).
+
+## Licença
+
+Este projeto é distribuído sob a licença [GNU General Public License v3.0](LICENSE).

@@ -1,7 +1,8 @@
 {
-  "name": "projeto2",
+  "name": "nimbus-forecast",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Aplicação web front-end para pesquisar cidades, consultar as condições meteorológicas atuais e visualizar a previsão dos próximos cinco dias. Os dados devem ser obtidos da API pública **Open-Meteo**, e o usuário deve poder manter uma lista persistente de cidades favoritas usando `localStorage`.",
   "scripts": {
     "dev": "vite",
