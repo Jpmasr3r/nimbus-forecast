@@ -104,7 +104,7 @@ export function FormCity() {
 	}, [city]);
 
 	return (
-		<section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+		<section className="y2k-window">
 			{notification && (
 				<Notification
 					key={notification.id}
@@ -113,23 +113,26 @@ export function FormCity() {
 					onClose={() => setNotification(null)}
 				/>
 			)}
-			<div className="border-b border-slate-100 p-5 sm:p-8">
+			<div className="y2k-search-area">
 				<label
-					className="mb-2 block text-sm font-semibold text-slate-700"
+					className="y2k-label"
 					htmlFor="city"
 				>
-					Qual cidade você deseja consultar?
+					Qual cidade você quer consultar?
 				</label>
-				<input
-					id="city"
-					className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-					type="text"
-					placeholder="Ex.: Charqueadas"
-					value={city}
-					onChange={(event) => setCity(event.target.value)}
-				/>
-				<p className="mt-3 text-sm leading-6 text-slate-500">
-					Digite o nome e escolha uma localidade nos resultados.
+				<div className="y2k-input-shell">
+					<span aria-hidden="true">⌕</span>
+					<input
+						id="city"
+						className="y2k-input"
+						type="text"
+						placeholder="Ex.: Charqueadas"
+						value={city}
+						onChange={(event) => setCity(event.target.value)}
+					/>
+				</div>
+				<p className="y2k-help">
+					Os resultados aparecem automaticamente enquanto você digita.
 				</p>
 			</div>
 			{loading ? (

@@ -7,6 +7,16 @@
       name="description"
       content="Consulte as condições meteorológicas e a previsão dos próximos dias."
     />
+    <script>
+      (() => {
+        const savedTheme = localStorage.getItem("theme");
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        document.documentElement.dataset.theme =
+          savedTheme === "light" || savedTheme === "dark" ? savedTheme : systemTheme;
+      })();
+    </script>
     <title>Consulta Meteorológica</title>
   </head>
   <body>

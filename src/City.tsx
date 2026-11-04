@@ -21,32 +21,31 @@ export function City({
 	};
 
 	return (
-		<article className="group flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-50 hover:shadow-md">
+		<article className="y2k-city group">
 			<button
 				type="button"
-				className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left"
+				className="y2k-city-main"
 				onClick={() => onSelect(selectedCity)}
 			>
 				<div className="min-w-0">
-					<h3 className="truncate text-base font-bold text-slate-800">
+					<h3 className="truncate text-base font-bold">
 						{name}
 					</h3>
-					<p className="mt-1 text-sm text-slate-500">
+					<p className="y2k-city-location">
 						{admin1 ? `${admin1}, ${country}` : country}
 					</p>
 				</div>
-				<span
-					className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-lg text-brand-600 shadow-sm transition group-hover:bg-brand-600 group-hover:text-white"
-					aria-hidden="true"
-				>
+				<span className="y2k-arrow" aria-hidden="true">
 					→
 				</span>
 			</button>
 			<button
 				type="button"
+				className={`y2k-favorite ${favorite ? "is-active" : ""}`}
+				aria-label={favorite ? "Remover favorito" : "Favoritar"}
 				onClick={() => onToggleFavorite(selectedCity)}
 			>
-				{favorite ? "Remover favorito" : "Favoritar"}
+				<span aria-hidden="true">{favorite ? "★" : "☆"}</span>
 			</button>
 		</article>
 	);

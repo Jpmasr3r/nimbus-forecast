@@ -11,21 +11,22 @@ export function CityResults({
 }: CityResultsProps) {
 	if (results.length === 0) {
 		return (
-			<p className="p-5 text-sm text-slate-500 sm:p-8" aria-live="polite">
-				{emptyMessage}
-			</p>
+			<div className="y2k-empty" aria-live="polite">
+				<span aria-hidden="true">[ ! ]</span>
+				<p>{emptyMessage}</p>
+			</div>
 		);
 	}
 
 	return (
-		<section className="p-5 sm:p-8" aria-live="polite">
-			<div className="mb-4 flex items-center justify-between gap-4">
-				<h2 className="text-lg font-bold text-slate-800">{title}</h2>
-				<span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-700">
+		<section className="y2k-results" aria-live="polite">
+			<div className="y2k-section-heading">
+				<h2>{title}</h2>
+				<span className="y2k-counter">
 					{results.length}
 				</span>
 			</div>
-			<div className="grid gap-3">
+			<div className="grid gap-3 sm:grid-cols-2">
 				{results.map((city) => (
 					<City
 						key={city.id}

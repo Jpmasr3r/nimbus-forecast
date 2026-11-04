@@ -9,9 +9,9 @@ type NotificationProps = {
 };
 
 const VARIANT_STYLES: Record<NotificationVariant, string> = {
-	info: "border-brand-100 text-slate-700",
-	success: "border-emerald-200 text-emerald-800",
-	error: "border-red-200 text-red-700",
+	info: "is-info",
+	success: "is-success",
+	error: "is-error",
 };
 
 function getNotificationDuration(message: string): number {
@@ -50,14 +50,17 @@ export function Notification({
 
 	return (
 		<aside
-			className={`fixed top-4 right-4 z-50 flex max-w-sm items-start gap-4 rounded-xl border bg-white p-4 shadow-xl ${VARIANT_STYLES[variant]}`}
+			className={`y2k-notification ${VARIANT_STYLES[variant]}`}
 			role={variant === "error" ? "alert" : "status"}
 			aria-live={variant === "error" ? "assertive" : "polite"}
 		>
-			<p className="text-sm leading-6">{message}</p>
+			<span className="y2k-notification-icon" aria-hidden="true">
+				{variant === "success" ? "✓" : variant === "error" ? "×" : "i"}
+			</span>
+			<p>{message}</p>
 			<button
 				type="button"
-				className="grid size-7 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+				className="y2k-notification-close"
 				aria-label="Fechar notificação"
 				onClick={() => {
 					setVisible(false);

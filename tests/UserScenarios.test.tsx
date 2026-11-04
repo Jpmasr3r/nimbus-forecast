@@ -6,11 +6,12 @@ const portoAlegre = {
 	id: 1,
 	name: "Porto Alegre",
 	country: "Brasil",
+	admin1: "Rio Grande do Sul",
 	latitude: -30.03,
 	longitude: -51.23,
 };
 
-function successfulResponse(results: unknown[]): Response {
+function cityResponse(results: unknown[]): Response {
 	return {
 		ok: true,
 		json: vi.fn().mockResolvedValue({
@@ -18,10 +19,63 @@ function successfulResponse(results: unknown[]): Response {
 				elevation: 0,
 				feature_code: "PPL",
 				country_code: "BR",
-				timezone: "UTC",
+				timezone: "America/Sao_Paulo",
 				...(city as object),
 			})),
 			generationtime_ms: 0.1,
+		}),
+	} as unknown as Response;
+}
+
+function weatherResponse(): Response {
+	return {
+		ok: true,
+		json: vi.fn().mockResolvedValue({
+			latitude: -30.03,
+			longitude: -51.23,
+			generationtime_ms: 0.1,
+			utc_offset_seconds: -10800,
+			timezone: "America/Sao_Paulo",
+			timezone_abbreviation: "GMT-3",
+			elevation: 10,
+			current_units: {
+				time: "iso8601",
+				interval: "seconds",
+				temperature_2m: "°C",
+				relative_humidity_2m: "%",
+				apparent_temperature: "°C",
+				weather_code: "wmo code",
+				wind_speed_10m: "km/h",
+			},
+			current: {
+				time: "2026-11-04T10:00",
+				interval: 900,
+				temperature_2m: 21,
+				relative_humidity_2m: 70,
+				apparent_temperature: 22,
+				weather_code: 0,
+				wind_speed_10m: 8,
+			},
+			daily_units: {
+				time: "iso8601",
+				weather_code: "wmo code",
+				temperature_2m_max: "°C",
+				temperature_2m_min: "°C",
+				precipitation_probability_max: "%",
+			},
+			daily: {
+				time: [
+					"2026-11-04",
+					"2026-11-05",
+					"2026-11-06",
+					"2026-11-07",
+					"2026-11-08",
+				],
+				weather_code: [0, 1, 2, 3, 61],
+				temperature_2m_max: [25, 26, 24, 23, 22],
+				temperature_2m_min: [15, 16, 14, 13, 12],
+				precipitation_probability_max: [10, 15, 20, 30, 70],
+			},
 		}),
 	} as unknown as Response;
 }
@@ -32,87 +86,118 @@ async function finishDebounce(): Promise<void> {
 	});
 }
 
+async function finishPromises(): Promise<void> {
+	await act(async () => {
+		await Promise.resolve();
+		await Promise.resolve();
+	});
+}
+
 describe("simulações de usuários", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
 
-	it("usuário experiente: pesquisa, consulta, fecha e favorita uma cidade", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn().mockResolvedValue(successfulResponse([portoAlegre])),
+	it("usuário perfeito: conclui pesquisa, previsão e favoritos sem erros", async () => {
+		const fetchMock = vi.fn((url: string | URL | Request) =>
+			String(url).includes("geocoding-api")
+				? Promise.resolve(cityResponse([portoAlegre]))
+				: Promise.resolve(weatherResponse()),
 		);
+		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
 		const input = screen.getByRole("textbox");
 
 		fireEvent.change(input, { target: { value: "Porto Alegre" } });
 		await finishDebounce();
 
+		expect(screen.getByText("Porto Alegre")).toBeInTheDocument();
+		expect(screen.getByText("Rio Grande do Sul, Brasil")).toBeInTheDocument();
+		expect(
+			screen.getByText("Pesquisa concluída com sucesso. 1 cidade encontrada."),
+		).toBeInTheDocument();
+
 		fireEvent.click(screen.getByRole("button", { name: /Porto Alegre/i }));
 		expect(screen.getByRole("dialog")).toBeInTheDocument();
+		expect(
+			screen.getByText("Carregando informações meteorológicas..."),
+		).toBeInTheDocument();
+		await finishPromises();
+
+		expect(screen.getByText("21°C")).toBeInTheDocument();
+		expect(screen.getAllByText("Céu limpo").length).toBeGreaterThan(0);
+		expect(screen.getAllByText(/^2026-11-/)).toHaveLength(5);
 
 		fireEvent.click(
 			screen.getByRole("button", { name: "Fechar detalhes da cidade" }),
 		);
-		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-
 		fireEvent.click(screen.getByRole("button", { name: "Favoritar" }));
 		fireEvent.change(input, { target: { value: "" } });
 
 		expect(
 			screen.getByRole("heading", { name: "Cidades favoritas" }),
 		).toBeInTheDocument();
-		expect(screen.getByText("Porto Alegre")).toBeInTheDocument();
 		expect(JSON.parse(localStorage.getItem("favoriteCities") ?? "[]")).toEqual([
 			portoAlegre,
 		]);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 	});
 
-	it("usuário iniciante: tenta pesquisar sem informar uma cidade", async () => {
-		const fetchMock = vi.fn();
+	it("usuário leigo: recebe orientação ao pesquisar espaços e cidade inexistente", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(cityResponse([]));
 		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
 		const input = screen.getByRole("textbox");
 
 		expect(
-			screen.getByText("Digite o nome e escolha uma localidade nos resultados."),
+			screen.getByText(
+				"Os resultados aparecem automaticamente enquanto você digita.",
+			),
 		).toBeInTheDocument();
 		fireEvent.change(input, { target: { value: "   " } });
 		await finishDebounce();
-
 		expect(fetchMock).not.toHaveBeenCalled();
+
+		fireEvent.change(input, { target: { value: "Cidade que não existe" } });
+		await finishDebounce();
+
+		expect(fetchMock).toHaveBeenCalledOnce();
 		expect(
-			screen.getByText("Você ainda não possui cidades favoritas."),
+			screen.getByText("Pesquisa concluída, mas nenhuma cidade foi encontrada."),
 		).toBeInTheDocument();
+		expect(screen.getByText("Nenhuma cidade encontrada.")).toBeInTheDocument();
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
 
-	it("usuário caótico: usa dados corrompidos, digita rapidamente e enfrenta erro da API", async () => {
+	it("usuário falho: não quebra o sistema com dados corrompidos e entrada hostil", async () => {
 		localStorage.setItem("favoriteCities", "{dados quebrados");
-		const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+		const hostileInput = "<script>alert('falha')</script>";
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: vi.fn().mockResolvedValue({ results: "estrutura inválida" }),
+		});
 		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
 		const input = screen.getByRole("textbox");
 
-		fireEvent.change(input, { target: { value: "P" } });
-		fireEvent.change(input, { target: { value: "Po" } });
-		fireEvent.change(input, { target: { value: "Cidade impossível" } });
+		fireEvent.change(input, { target: { value: "<script>" } });
+		fireEvent.change(input, { target: { value: "<script>alert" } });
+		fireEvent.change(input, { target: { value: hostileInput } });
 		await finishDebounce();
 
 		expect(fetchMock).toHaveBeenCalledOnce();
-		const requestedUrl = String(fetchMock.mock.calls[0][0]);
-		expect(new URL(requestedUrl).searchParams.get("name")).toBe(
-			"Cidade impossível",
-		);
+		const requestedUrl = new URL(String(fetchMock.mock.calls[0][0]));
+		expect(requestedUrl.searchParams.get("name")).toBe(hostileInput);
 		expect(consoleError).toHaveBeenCalledOnce();
 		expect(
 			screen.getByText(
 				"Não foi possível buscar cidades. Tente novamente em alguns instantes.",
 			),
 		).toBeInTheDocument();
-		expect(screen.getByText("Nenhuma cidade encontrada.")).toBeInTheDocument();
+		expect(screen.queryByText("Buscando cidades...")).not.toBeInTheDocument();
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(document.querySelectorAll("script")).toHaveLength(0);
 		expect(localStorage.getItem("favoriteCities")).toBe("[]");
 	});
 });

@@ -47,7 +47,7 @@ describe("CityModal", () => {
 		const onClose = vi.fn();
 		render(<CityModal {...modalProps} onClose={onClose} />);
 
-		fireEvent.click(screen.getByText("Detalhes da cidade"));
+		fireEvent.click(screen.getByText("Previsão do tempo"));
 		expect(onClose).not.toHaveBeenCalled();
 
 		fireEvent.click(screen.getByRole("dialog"));

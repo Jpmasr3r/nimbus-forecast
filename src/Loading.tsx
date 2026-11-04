@@ -5,12 +5,12 @@ type LoadingProps = {
 export function Loading({ message = "Carregando..." }: LoadingProps) {
 	return (
 		<div
-			className="flex items-center gap-3 p-5 text-sm font-medium text-slate-600 sm:p-8"
+			className="y2k-loading"
 			role="status"
 			aria-live="polite"
 		>
 			<span
-				className="size-5 animate-spin rounded-full border-2 border-brand-100 border-t-brand-600"
+				className="y2k-spinner"
 				aria-hidden="true"
 			/>
 			{message}

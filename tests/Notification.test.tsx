@@ -40,4 +40,20 @@ describe("Notification", () => {
 		expect(screen.queryByRole("status")).not.toBeInTheDocument();
 		expect(onClose).toHaveBeenCalledOnce();
 	});
+
+	it("usa alerta assertivo para uma notificação de erro", () => {
+		render(<Notification message="Falha na operação" variant="error" />);
+
+		const notification = screen.getByRole("alert");
+		expect(notification).toHaveClass("is-error");
+		expect(notification).toHaveAttribute("aria-live", "assertive");
+	});
+
+	it("usa status educado para uma notificação de sucesso", () => {
+		render(<Notification message="Operação concluída" variant="success" />);
+
+		const notification = screen.getByRole("status");
+		expect(notification).toHaveClass("is-success");
+		expect(notification).toHaveAttribute("aria-live", "polite");
+	});
 });

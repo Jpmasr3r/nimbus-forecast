@@ -79,7 +79,7 @@ export function CityModal({
 	return (
 		<dialog
 			ref={dialogRef}
-			className="city-modal m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl bg-white p-0 text-slate-800 shadow-2xl"
+			className="city-modal y2k-modal"
 			aria-labelledby="city-modal-title"
 			onClick={(event) => {
 				if (event.target === event.currentTarget) {
@@ -104,23 +104,23 @@ export function CityModal({
 					onClose={() => setNotification(null)}
 				/>
 			)}
-			<article className="p-6">
-				<header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+			<article className="y2k-modal-card">
+				<header className="y2k-modal-header">
 					<div>
-						<p className="text-sm font-semibold text-brand-600">
-							Detalhes da cidade
+						<p className="y2k-eyebrow">
+							Previsão do tempo
 						</p>
-						<h2 id="city-modal-title" className="mt-1 text-2xl font-bold">
+						<h2 id="city-modal-title" className="y2k-modal-title">
 							{name}
 						</h2>
-						<p className="mt-1 text-sm text-slate-500">
+						<p className="y2k-muted">
 							{admin1 ? `${admin1}, ${country}` : country}
 						</p>
 					</div>
 
 					<button
 						type="button"
-						className="grid size-9 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+						className="y2k-close"
 						aria-label="Fechar detalhes da cidade"
 						onClick={onClose}
 					>
@@ -134,7 +134,7 @@ export function CityModal({
 
 				{error && (
 					<p
-						className="my-6 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-700"
+						className="y2k-error-panel"
 						role="alert"
 					>
 						{error}
@@ -143,50 +143,50 @@ export function CityModal({
 
 				{weather && (
 					<>
-						<section className="py-6" aria-labelledby="current-weather-title">
+						<section className="y2k-weather-section" aria-labelledby="current-weather-title">
 							<div className="mb-4 flex items-center justify-between gap-4">
 								<h3
 									id="current-weather-title"
-									className="text-lg font-bold text-slate-800"
+									className="y2k-section-title"
 								>
 									Condições atuais
 								</h3>
-								<span className="text-sm text-slate-500">
+								<span className="y2k-condition-badge">
 									{getWeatherDescription(weather.current.weather_code)}
 								</span>
 							</div>
 
 							<dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-								<div className="rounded-xl bg-slate-100 p-3">
-									<dt className="text-xs font-semibold text-slate-500">
+								<div className="y2k-stat">
+									<dt>
 										Temperatura
 									</dt>
-									<dd className="mt-1 font-bold text-slate-800">
+									<dd>
 										{weather.current.temperature_2m}
 										{weather.current_units.temperature_2m}
 									</dd>
 								</div>
-								<div className="rounded-xl bg-slate-100 p-3">
-									<dt className="text-xs font-semibold text-slate-500">
+								<div className="y2k-stat">
+									<dt>
 										Sensação térmica
 									</dt>
-									<dd className="mt-1 font-bold text-slate-800">
+									<dd>
 										{weather.current.apparent_temperature}
 										{weather.current_units.apparent_temperature}
 									</dd>
 								</div>
-								<div className="rounded-xl bg-slate-100 p-3">
-									<dt className="text-xs font-semibold text-slate-500">
+								<div className="y2k-stat">
+									<dt>
 										Umidade
 									</dt>
-									<dd className="mt-1 font-bold text-slate-800">
+									<dd>
 										{weather.current.relative_humidity_2m}
 										{weather.current_units.relative_humidity_2m}
 									</dd>
 								</div>
-								<div className="rounded-xl bg-slate-100 p-3">
-									<dt className="text-xs font-semibold text-slate-500">Vento</dt>
-									<dd className="mt-1 font-bold text-slate-800">
+								<div className="y2k-stat">
+									<dt>Vento</dt>
+									<dd>
 										{weather.current.wind_speed_10m}
 										{weather.current_units.wind_speed_10m}
 									</dd>
@@ -195,39 +195,39 @@ export function CityModal({
 						</section>
 
 						<section
-							className="border-t border-slate-200 py-6"
+							className="y2k-weather-section y2k-forecast-section"
 							aria-labelledby="daily-forecast-title"
 						>
 							<h3
 								id="daily-forecast-title"
-								className="text-lg font-bold text-slate-800"
+								className="y2k-section-title"
 							>
 								Previsão para cinco dias
 							</h3>
 							<div className="mt-4 grid gap-3 sm:grid-cols-2">
 								{weather.daily.time.map((date, index) => (
-									<article className="rounded-xl bg-slate-100 p-4" key={date}>
-										<h4 className="font-bold text-slate-800">{date}</h4>
-										<p className="mt-1 text-sm text-slate-500">
+									<article className="y2k-forecast-card" key={date}>
+										<h4>{date}</h4>
+										<p className="y2k-muted">
 											{getWeatherDescription(weather.daily.weather_code[index])}
 										</p>
 										<dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
 											<div>
-												<dt className="text-slate-500">Mín.</dt>
+												<dt>Mín.</dt>
 												<dd className="font-semibold">
 													{weather.daily.temperature_2m_min[index]}
 													{weather.daily_units.temperature_2m_min}
 												</dd>
 											</div>
 											<div>
-												<dt className="text-slate-500">Máx.</dt>
+												<dt>Máx.</dt>
 												<dd className="font-semibold">
 													{weather.daily.temperature_2m_max[index]}
 													{weather.daily_units.temperature_2m_max}
 												</dd>
 											</div>
 											<div>
-												<dt className="text-slate-500">Chuva</dt>
+												<dt>Chuva</dt>
 												<dd className="font-semibold">
 													{weather.daily.precipitation_probability_max[index]}
 													{weather.daily_units.precipitation_probability_max}
@@ -241,8 +241,8 @@ export function CityModal({
 					</>
 				)}
 
-				<footer className="border-t border-slate-200 pt-4 text-xs text-slate-500">
-					Dados meteorológicos fornecidos por Open-Meteo.
+				<footer className="y2k-modal-footer">
+					<span className="y2k-status-dot" /> Dados atualizados por Open-Meteo
 				</footer>
 			</article>
 		</dialog>
