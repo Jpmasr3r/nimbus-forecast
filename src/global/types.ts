@@ -1,14 +1,10 @@
-export type CityType = {
-	id: number;
-	name: string;
-	country: string;
-	latitude: number;
-	longitude: number;
-};
+import type {
+	CityApiResponseType,
+	CityType,
+	WeatherApiResponseType,
+} from "./schemas";
 
-export type ApiResponseType = {
-	results?: CityType[];
-};
+export type { CityApiResponseType, CityType, WeatherApiResponseType };
 
 export type CityProps = {
 	id: number;
@@ -16,6 +12,7 @@ export type CityProps = {
 	country: string;
 	latitude: number;
 	longitude: number;
+	admin1?: string;
 	favorite: boolean;
 	onToggleFavorite: (city: CityType) => void;
 	onSelect: (city: CityType) => void;
@@ -27,6 +24,7 @@ export type CityModalProps = {
 	country: string;
 	latitude: number;
 	longitude: number;
+	admin1?: string;
 	onClose: () => void;
 };
 

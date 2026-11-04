@@ -34,6 +34,7 @@ export function CityResults({
 						country={city.country}
 						latitude={city.latitude}
 						longitude={city.longitude}
+						admin1={city.admin1}
 						favorite={favorites.some((favorite) => favorite.id === city.id)}
 						onToggleFavorite={onToggleFavorite}
 						onSelect={onSelect}

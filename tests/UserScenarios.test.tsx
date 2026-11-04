@@ -13,7 +13,16 @@ const portoAlegre = {
 function successfulResponse(results: unknown[]): Response {
 	return {
 		ok: true,
-		json: vi.fn().mockResolvedValue({ results }),
+		json: vi.fn().mockResolvedValue({
+			results: results.map((city) => ({
+				elevation: 0,
+				feature_code: "PPL",
+				country_code: "BR",
+				timezone: "UTC",
+				...(city as object),
+			})),
+			generationtime_ms: 0.1,
+		}),
 	} as unknown as Response;
 }
 
@@ -97,6 +106,11 @@ describe("simulações de usuários", () => {
 			"Cidade impossível",
 		);
 		expect(consoleError).toHaveBeenCalledOnce();
+		expect(
+			screen.getByText(
+				"Não foi possível buscar cidades. Tente novamente em alguns instantes.",
+			),
+		).toBeInTheDocument();
 		expect(screen.getByText("Nenhuma cidade encontrada.")).toBeInTheDocument();
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(localStorage.getItem("favoriteCities")).toBe("[]");

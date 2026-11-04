@@ -21,7 +21,16 @@ const lisboa = {
 function successfulResponse(results: unknown[]): Response {
 	return {
 		ok: true,
-		json: vi.fn().mockResolvedValue({ results }),
+		json: vi.fn().mockResolvedValue({
+			results: results.map((city) => ({
+				elevation: 0,
+				feature_code: "PPL",
+				country_code: "BR",
+				timezone: "UTC",
+				...(city as object),
+			})),
+			generationtime_ms: 0.1,
+		}),
 	} as unknown as Response;
 }
 
@@ -54,6 +63,32 @@ describe("FormCity", () => {
 		const requestedUrl = String(fetchMock.mock.calls[0][0]);
 		expect(new URL(requestedUrl).searchParams.get("name")).toBe("Lisboa");
 		expect(screen.getByText("Lisboa")).toBeInTheDocument();
+	});
+
+	it("mostra loading durante a busca e notifica o sucesso", async () => {
+		let resolveResponse!: (response: Response) => void;
+		const pendingResponse = new Promise<Response>((resolve) => {
+			resolveResponse = resolve;
+		});
+		vi.stubGlobal("fetch", vi.fn().mockReturnValue(pendingResponse));
+		render(<FormCity />);
+
+		fireEvent.change(screen.getByRole("textbox"), {
+			target: { value: "Lisboa" },
+		});
+		await finishDebounce();
+
+		expect(screen.getByText("Buscando cidades...")).toBeInTheDocument();
+
+		await act(async () => {
+			resolveResponse(successfulResponse([lisboa]));
+			await Promise.resolve();
+		});
+
+		expect(screen.queryByText("Buscando cidades...")).not.toBeInTheDocument();
+		expect(
+			screen.getByText("Pesquisa concluída com sucesso. 1 cidade encontrada."),
+		).toBeInTheDocument();
 	});
 
 	it("cancela a requisição anterior quando o texto muda", async () => {

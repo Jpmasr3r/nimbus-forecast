@@ -78,4 +78,22 @@ describe("City", () => {
 			screen.getByRole("button", { name: "Remover favorito" }),
 		).toBeInTheDocument();
 	});
+
+	it("exibe a região antes do país quando ela está disponível", () => {
+		render(
+			<City
+				id={42}
+				name="Charqueadas"
+				country="Brasil"
+				admin1="Rio Grande do Sul"
+				latitude={-29.95}
+				longitude={-51.62}
+				favorite={false}
+				onToggleFavorite={vi.fn()}
+				onSelect={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Rio Grande do Sul, Brasil")).toBeInTheDocument();
+	});
 });

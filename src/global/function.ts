@@ -1,3 +1,4 @@
+import { CitySchema, StoredFavoritesSchema } from "./schemas";
 import type { CityType } from "./types";
 
 export function getFavorites(): CityType[] {
@@ -5,21 +6,16 @@ export function getFavorites(): CityType[] {
 		const storedValue: unknown = JSON.parse(
 			localStorage.getItem("favoriteCities") ?? "[]",
 		);
+		const storedFavorites = StoredFavoritesSchema.safeParse(storedValue);
 
-		if (!Array.isArray(storedValue)) {
+		if (!storedFavorites.success) {
 			return [];
 		}
 
-		return storedValue.filter(
-			(city): city is CityType =>
-				typeof city === "object" &&
-				city !== null &&
-				typeof city.id === "number" &&
-				typeof city.name === "string" &&
-				typeof city.country === "string" &&
-				typeof city.latitude === "number" &&
-				typeof city.longitude === "number",
-		);
+		return storedFavorites.data.flatMap((city) => {
+			const result = CitySchema.safeParse(city);
+			return result.success ? [result.data] : [];
+		});
 	} catch {
 		return [];
 	}

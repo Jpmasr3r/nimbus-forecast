@@ -1,18 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CityModal } from "./CityModal";
 import { CityResults } from "./CityResult";
+import { getCities } from "./global/city";
 import { getFavorites, toggleFavorite } from "./global/function";
-import type { ApiResponseType, CityType } from "./global/types";
+import type { CityType } from "./global/types";
+import { Loading } from "./Loading";
+import {
+	Notification,
+	type NotificationVariant,
+} from "./Notification";
 
-const BASE_API = "https://geocoding-api.open-meteo.com/v1";
+type NotificationState = {
+	id: number;
+	message: string;
+	variant: NotificationVariant;
+};
 
 export function FormCity() {
 	const [city, setCity] = useState("");
 	const [results, setResults] = useState<CityType[]>([]);
 	const [favorites, setFavorites] = useState<CityType[]>(getFavorites);
+	const [loading, setLoading] = useState(false);
+	const [notification, setNotification] = useState<NotificationState | null>(null);
+	const notificationId = useRef(0);
 	const hasSearch = city.trim().length > 0;
 	const displayedCities = hasSearch ? results : favorites;
 	const [selectCity, setSelectCity] = useState<CityType | null>(null);
+
+	function notify(message: string, variant: NotificationVariant): void {
+		notificationId.current += 1;
+		setNotification({ id: notificationId.current, message, variant });
+	}
 
 	useEffect(() => {
 		localStorage.setItem("favoriteCities", JSON.stringify(favorites));
@@ -32,27 +50,26 @@ export function FormCity() {
 
 			if (!name) {
 				setResults([]);
+				setLoading(false);
 				return;
 			}
 
+			setLoading(true);
+			setResults([]);
+
 			try {
-				const params = new URLSearchParams({
-					name,
-					count: "10",
-					language: "pt",
-					format: "json",
-				});
+				const data = await getCities(name, controller.signal);
+				const cities = data.results ?? [];
+				setResults(cities);
 
-				const response = await fetch(`${BASE_API}/search?${params}`, {
-					signal: controller.signal,
-				});
-
-				if (!response.ok) {
-					throw new Error(`Erro HTTP : ${response.status}`);
+				if (cities.length > 0) {
+					notify(
+						`Pesquisa concluída com sucesso. ${cities.length} ${cities.length === 1 ? "cidade encontrada" : "cidades encontradas"}.`,
+						"success",
+					);
+				} else {
+					notify("Pesquisa concluída, mas nenhuma cidade foi encontrada.", "info");
 				}
-
-				const data: ApiResponseType = await response.json();
-				setResults(data.results ?? []);
 			} catch (error) {
 				if (
 					typeof error === "object" &&
@@ -65,6 +82,14 @@ export function FormCity() {
 
 				console.error("Erro ao buscar cidade:", error);
 				setResults([]);
+				notify(
+					"Não foi possível buscar cidades. Tente novamente em alguns instantes.",
+					"error",
+				);
+			} finally {
+				if (!controller.signal.aborted) {
+					setLoading(false);
+				}
 			}
 		}
 
@@ -80,6 +105,14 @@ export function FormCity() {
 
 	return (
 		<section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+			{notification && (
+				<Notification
+					key={notification.id}
+					message={notification.message}
+					variant={notification.variant}
+					onClose={() => setNotification(null)}
+				/>
+			)}
 			<div className="border-b border-slate-100 p-5 sm:p-8">
 				<label
 					className="mb-2 block text-sm font-semibold text-slate-700"
@@ -99,20 +132,24 @@ export function FormCity() {
 					Digite o nome e escolha uma localidade nos resultados.
 				</p>
 			</div>
-			<CityResults
-				results={displayedCities}
-				favorites={favorites}
-				title={hasSearch ? "Cidades encontradas" : "Cidades favoritas"}
-				emptyMessage={
-					hasSearch
-						? "Nenhuma cidade encontrada."
-						: "Você ainda não possui cidades favoritas."
-				}
-				onToggleFavorite={handleToggleFavorite}
-				onSelect={(select) => {
-					setSelectCity(select);
-				}}
-			/>
+			{loading ? (
+				<Loading message="Buscando cidades..." />
+			) : (
+				<CityResults
+					results={displayedCities}
+					favorites={favorites}
+					title={hasSearch ? "Cidades encontradas" : "Cidades favoritas"}
+					emptyMessage={
+						hasSearch
+							? "Nenhuma cidade encontrada."
+							: "Você ainda não possui cidades favoritas."
+					}
+					onToggleFavorite={handleToggleFavorite}
+					onSelect={(select) => {
+						setSelectCity(select);
+					}}
+				/>
+			)}
 			{selectCity && (
 				<CityModal {...selectCity} onClose={() => setSelectCity(null)} />
 			)}
