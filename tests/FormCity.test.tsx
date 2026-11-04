@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FormCity } from "../src/FormCity";
 
 const portoAlegre = {
@@ -34,18 +34,14 @@ function successfulResponse(results: unknown[]): Response {
 	} as unknown as Response;
 }
 
-async function finishDebounce(): Promise<void> {
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(500);
-	});
+function submitSearch(value: string): void {
+	fireEvent.change(screen.getByRole("textbox"), { target: { value } });
+	fireEvent.click(screen.getByRole("button", { name: "Pesquisar" }));
 }
 
 describe("FormCity", () => {
-	beforeEach(() => {
+	it("pesquisa automaticamente depois de 500 ms sem digitação", async () => {
 		vi.useFakeTimers();
-	});
-
-	it("não consulta a API antes do debounce e usa o texto atual do input", async () => {
 		const fetchMock = vi.fn().mockResolvedValue(successfulResponse([lisboa]));
 		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
@@ -53,11 +49,32 @@ describe("FormCity", () => {
 		fireEvent.change(screen.getByRole("textbox"), {
 			target: { value: "Lisboa" },
 		});
-
-		act(() => vi.advanceTimersByTime(499));
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(499);
+		});
 		expect(fetchMock).not.toHaveBeenCalled();
 
-		await finishDebounce();
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(1);
+		});
+		expect(fetchMock).toHaveBeenCalledOnce();
+		expect(new URL(String(fetchMock.mock.calls[0][0])).searchParams.get("name")).toBe(
+			"Lisboa",
+		);
+	});
+
+	it("consulta a API somente depois do envio do formulário", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(successfulResponse([lisboa]));
+		vi.stubGlobal("fetch", fetchMock);
+		render(<FormCity />);
+
+		fireEvent.change(screen.getByRole("textbox"), {
+			target: { value: "Lisboa" },
+		});
+		expect(fetchMock).not.toHaveBeenCalled();
+
+		fireEvent.click(screen.getByRole("button", { name: "Pesquisar" }));
+		await screen.findByText("Lisboa");
 
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 		const requestedUrl = String(fetchMock.mock.calls[0][0]);
@@ -73,10 +90,7 @@ describe("FormCity", () => {
 		vi.stubGlobal("fetch", vi.fn().mockReturnValue(pendingResponse));
 		render(<FormCity />);
 
-		fireEvent.change(screen.getByRole("textbox"), {
-			target: { value: "Lisboa" },
-		});
-		await finishDebounce();
+		submitSearch("Lisboa");
 
 		expect(screen.getByText("Buscando cidades...")).toBeInTheDocument();
 
@@ -107,19 +121,27 @@ describe("FormCity", () => {
 		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
 
-		fireEvent.change(screen.getByRole("textbox"), {
-			target: { value: "Porto" },
-		});
-		await finishDebounce();
+		submitSearch("Porto");
 		expect(signals[0].aborted).toBe(false);
 
-		fireEvent.change(screen.getByRole("textbox"), {
-			target: { value: "Porto Alegre" },
-		});
+		submitSearch("Porto Alegre");
 
 		expect(signals[0].aborted).toBe(true);
 		await act(async () => Promise.resolve());
 		expect(consoleError).not.toHaveBeenCalled();
+	});
+
+	it("orienta o usuário e não consulta a API quando a pesquisa é inválida", () => {
+		const fetchMock = vi.fn();
+		vi.stubGlobal("fetch", fetchMock);
+		render(<FormCity />);
+
+		submitSearch("   ");
+
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(
+			screen.getByText("Informe o nome de uma cidade para pesquisar."),
+		).toBeInTheDocument();
 	});
 
 	it("exibe os favoritos salvos quando o input está vazio", () => {
@@ -143,10 +165,8 @@ describe("FormCity", () => {
 		);
 		render(<FormCity />);
 
-		fireEvent.change(screen.getByRole("textbox"), {
-			target: { value: "Porto Alegre" },
-		});
-		await finishDebounce();
+		submitSearch("Porto Alegre");
+		await screen.findByText("Porto Alegre");
 
 		const addButton = screen.getByRole("button", { name: "Favoritar" });
 		fireEvent.click(addButton);
@@ -175,12 +195,13 @@ describe("FormCity", () => {
 		render(<FormCity />);
 		const input = screen.getByRole("textbox");
 
-		fireEvent.change(input, { target: { value: "Lisboa" } });
-		await finishDebounce();
+		submitSearch("Lisboa");
+		await screen.findByText("Lisboa");
 		expect(screen.getByText("Lisboa")).toBeInTheDocument();
 		expect(screen.queryByText("Porto Alegre")).not.toBeInTheDocument();
 
 		fireEvent.change(input, { target: { value: "" } });
+		fireEvent.click(screen.getByRole("button", { name: "Pesquisar" }));
 
 		expect(screen.getByText("Porto Alegre")).toBeInTheDocument();
 		expect(screen.queryByText("Lisboa")).not.toBeInTheDocument();

@@ -51,8 +51,8 @@ export const WeatherApiResponseSchema = z.object({
 		time: z.string(),
 		interval: z.string(),
 		temperature_2m: z.string(),
-		relative_humidity_2m: z.string(),
-		apparent_temperature: z.string(),
+		relative_humidity_2m: z.string().optional(),
+		apparent_temperature: z.string().optional(),
 		weather_code: z.string(),
 		wind_speed_10m: z.string(),
 	}),
@@ -60,8 +60,8 @@ export const WeatherApiResponseSchema = z.object({
 		time: z.string(),
 		interval: z.number().nonnegative(),
 		temperature_2m: z.number(),
-		relative_humidity_2m: z.number(),
-		apparent_temperature: z.number(),
+		relative_humidity_2m: z.number().nullable().optional(),
+		apparent_temperature: z.number().nullable().optional(),
 		weather_code: z.number().int(),
 		wind_speed_10m: z.number().nonnegative(),
 	}),
@@ -70,14 +70,17 @@ export const WeatherApiResponseSchema = z.object({
 		weather_code: z.string(),
 		temperature_2m_max: z.string(),
 		temperature_2m_min: z.string(),
-		precipitation_probability_max: z.string(),
+		precipitation_probability_max: z.string().optional(),
 	}),
 	daily: z.object({
-		time: z.array(z.string()).max(5),
-		weather_code: z.array(z.number().int()).max(5),
-		temperature_2m_max: z.array(z.number()).max(5),
-		temperature_2m_min: z.array(z.number()).max(5),
-		precipitation_probability_max: z.array(z.number()).max(5),
+		time: z.array(z.string()).length(5),
+		weather_code: z.array(z.number().int()).length(5),
+		temperature_2m_max: z.array(z.number()).length(5),
+		temperature_2m_min: z.array(z.number()).length(5),
+		precipitation_probability_max: z
+			.array(z.number().nullable())
+			.length(5)
+			.optional(),
 	}),
 });
 

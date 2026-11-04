@@ -1,4 +1,5 @@
 import { City } from "./City";
+import { isSameCity } from "./global/function";
 import type { CityResultsProps } from "./global/types";
 
 export function CityResults({
@@ -36,7 +37,7 @@ export function CityResults({
 						latitude={city.latitude}
 						longitude={city.longitude}
 						admin1={city.admin1}
-						favorite={favorites.some((favorite) => favorite.id === city.id)}
+						favorite={favorites.some((favorite) => isSameCity(favorite, city))}
 						onToggleFavorite={onToggleFavorite}
 						onSelect={onSelect}
 					/>

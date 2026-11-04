@@ -6,7 +6,7 @@ O projeto utiliza as APIs públicas da [Open-Meteo](https://open-meteo.com/), n�
 
 ## Funcionalidades
 
-- Pesquisa automática de cidades com debounce de 500 ms.
+- Pesquisa automática com debounce de 500 ms ou por envio do formulário.
 - Cancelamento de requisições anteriores durante a digitação.
 - Exibição de cidade, estado/região e país.
 - Consulta meteorológica pelas coordenadas retornadas na geocodificação.
@@ -75,7 +75,7 @@ Não é necessário criar `.env` ou configurar uma chave de API.
 ## Fluxo da aplicação
 
 1. O usuário digita o nome de uma cidade.
-2. Após 500 ms sem novas alterações, a aplicação consulta a geocodificação.
+2. Após 500 ms sem novas alterações, ou ao enviar o formulário, a aplicação valida o texto e consulta a geocodificação.
 3. A API retorna até dez localidades.
 4. O usuário seleciona a localidade correta.
 5. A aplicação utiliza a latitude e a longitude recebidas.
@@ -234,7 +234,7 @@ A suíte possui testes de componentes, integração, regras de negócio, cliente
 
 Entre os cenários cobertos estão:
 
-- debounce e cancelamento de requisições;
+- debounce, validação do formulário e cancelamento de requisições anteriores;
 - carregamento, sucesso e erro das APIs;
 - respostas HTTP e JSON inválidos;
 - tradução de códigos meteorológicos;

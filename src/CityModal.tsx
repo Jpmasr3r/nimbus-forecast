@@ -4,6 +4,13 @@ import { getWeather, getWeatherDescription } from "./global/weather";
 import { Loading } from "./Loading";
 import { Notification } from "./Notification";
 
+function formatWeatherValue(
+	value: number | null | undefined,
+	unit: string | undefined,
+): string {
+	return value == null ? "Não disponível" : `${value}${unit ?? ""}`;
+}
+
 export function CityModal({
 	name,
 	country,
@@ -43,6 +50,7 @@ export function CityModal({
 		async function loadWeather() {
 			setLoading(true);
 			setError(null);
+			setWeather(null);
 
 			try {
 				const data = await getWeather(latitude, longitude, controller.signal);
@@ -171,8 +179,10 @@ export function CityModal({
 										Sensação térmica
 									</dt>
 									<dd>
-										{weather.current.apparent_temperature}
-										{weather.current_units.apparent_temperature}
+										{formatWeatherValue(
+											weather.current.apparent_temperature,
+											weather.current_units.apparent_temperature,
+										)}
 									</dd>
 								</div>
 								<div className="y2k-stat">
@@ -180,8 +190,10 @@ export function CityModal({
 										Umidade
 									</dt>
 									<dd>
-										{weather.current.relative_humidity_2m}
-										{weather.current_units.relative_humidity_2m}
+										{formatWeatherValue(
+											weather.current.relative_humidity_2m,
+											weather.current_units.relative_humidity_2m,
+										)}
 									</dd>
 								</div>
 								<div className="y2k-stat">
@@ -229,8 +241,10 @@ export function CityModal({
 											<div>
 												<dt>Chuva</dt>
 												<dd className="font-semibold">
-													{weather.daily.precipitation_probability_max[index]}
-													{weather.daily_units.precipitation_probability_max}
+													{formatWeatherValue(
+														weather.daily.precipitation_probability_max?.[index],
+														weather.daily_units.precipitation_probability_max,
+													)}
 												</dd>
 											</div>
 										</dl>

@@ -10,6 +10,48 @@ const modalProps = {
 	longitude: -51.23,
 };
 
+const weatherPayload = {
+	latitude: -30.03,
+	longitude: -51.23,
+	generationtime_ms: 0.1,
+	utc_offset_seconds: -10800,
+	timezone: "America/Sao_Paulo",
+	timezone_abbreviation: "GMT-3",
+	elevation: 10,
+	current_units: {
+		time: "iso8601",
+		interval: "seconds",
+		temperature_2m: "°C",
+		relative_humidity_2m: "%",
+		apparent_temperature: "°C",
+		weather_code: "wmo code",
+		wind_speed_10m: "km/h",
+	},
+	current: {
+		time: "2026-11-04T10:00",
+		interval: 900,
+		temperature_2m: 22,
+		relative_humidity_2m: 70,
+		apparent_temperature: 23,
+		weather_code: 0,
+		wind_speed_10m: 8,
+	},
+	daily_units: {
+		time: "iso8601",
+		weather_code: "wmo code",
+		temperature_2m_max: "°C",
+		temperature_2m_min: "°C",
+		precipitation_probability_max: "%",
+	},
+	daily: {
+		time: ["2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08"],
+		weather_code: [0, 1, 2, 3, 61],
+		temperature_2m_max: [25, 26, 24, 23, 22],
+		temperature_2m_min: [15, 16, 14, 13, 12],
+		precipitation_probability_max: [10, 20, 30, 40, 50],
+	},
+};
+
 describe("CityModal", () => {
 	it("abre como diálogo modal com os dados da cidade", () => {
 		render(<CityModal {...modalProps} onClose={vi.fn()} />);
@@ -59,47 +101,7 @@ describe("CityModal", () => {
 			"fetch",
 			vi.fn().mockResolvedValue({
 				ok: true,
-				json: vi.fn().mockResolvedValue({
-					latitude: -30.03,
-					longitude: -51.23,
-					generationtime_ms: 0.1,
-					utc_offset_seconds: -10800,
-					timezone: "America/Sao_Paulo",
-					timezone_abbreviation: "GMT-3",
-					elevation: 10,
-					current_units: {
-						time: "iso8601",
-						interval: "seconds",
-						temperature_2m: "°C",
-						relative_humidity_2m: "%",
-						apparent_temperature: "°C",
-						weather_code: "wmo code",
-						wind_speed_10m: "km/h",
-					},
-					current: {
-						time: "2026-11-04T10:00",
-						interval: 900,
-						temperature_2m: 22,
-						relative_humidity_2m: 70,
-						apparent_temperature: 23,
-						weather_code: 0,
-						wind_speed_10m: 8,
-					},
-					daily_units: {
-						time: "iso8601",
-						weather_code: "wmo code",
-						temperature_2m_max: "°C",
-						temperature_2m_min: "°C",
-						precipitation_probability_max: "%",
-					},
-					daily: {
-						time: ["2026-11-04"],
-						weather_code: [0],
-						temperature_2m_max: [25],
-						temperature_2m_min: [15],
-						precipitation_probability_max: [10],
-					},
-				}),
+				json: vi.fn().mockResolvedValue(weatherPayload),
 			}),
 		);
 
@@ -112,7 +114,33 @@ describe("CityModal", () => {
 			await screen.findByText("Informações meteorológicas carregadas com sucesso."),
 		).toBeInTheDocument();
 		expect(screen.queryByText("Carregando informações meteorológicas...")).not.toBeInTheDocument();
-		expect(screen.getByText("22°C")).toBeInTheDocument();
+		expect(screen.getAllByText("22°C").length).toBeGreaterThan(0);
+	});
+
+	it("indica campos opcionais ausentes sem rejeitar toda a previsão", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					...weatherPayload,
+					current: {
+						...weatherPayload.current,
+						apparent_temperature: null,
+						relative_humidity_2m: null,
+					},
+					daily: {
+						...weatherPayload.daily,
+						precipitation_probability_max: undefined,
+					},
+				}),
+			}),
+		);
+
+		render(<CityModal {...modalProps} onClose={vi.fn()} />);
+
+		expect(await screen.findAllByText("Não disponível")).toHaveLength(7);
+		expect(screen.getAllByText("22°C").length).toBeGreaterThan(0);
 	});
 
 	it("encerra o loading e notifica quando a consulta do clima falha", async () => {

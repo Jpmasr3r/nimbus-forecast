@@ -100,4 +100,19 @@ describe("toggleFavorite", () => {
 
 		expect(favorites).toEqual([city]);
 	});
+
+	it("considera id e coordenadas ao identificar uma duplicata", () => {
+		const sameIdDifferentLocation = {
+			...city,
+			name: "Outra cidade",
+			latitude: 10,
+			longitude: 20,
+		};
+
+		expect(toggleFavorite([city], sameIdDifferentLocation)).toEqual([
+			city,
+			sameIdDifferentLocation,
+		]);
+		expect(toggleFavorite([city], { ...city })).toEqual([]);
+	});
 });

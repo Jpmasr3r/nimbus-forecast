@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FormCity } from "../src/FormCity";
 
 const portoAlegre = {
@@ -80,10 +80,9 @@ function weatherResponse(): Response {
 	} as unknown as Response;
 }
 
-async function finishDebounce(): Promise<void> {
-	await act(async () => {
-		await vi.advanceTimersByTimeAsync(500);
-	});
+function submitSearch(value: string): void {
+	fireEvent.change(screen.getByRole("textbox"), { target: { value } });
+	fireEvent.click(screen.getByRole("button", { name: "Pesquisar" }));
 }
 
 async function finishPromises(): Promise<void> {
@@ -94,10 +93,6 @@ async function finishPromises(): Promise<void> {
 }
 
 describe("simulações de usuários", () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
-
 	it("usuário perfeito: conclui pesquisa, previsão e favoritos sem erros", async () => {
 		const fetchMock = vi.fn((url: string | URL | Request) =>
 			String(url).includes("geocoding-api")
@@ -108,8 +103,8 @@ describe("simulações de usuários", () => {
 		render(<FormCity />);
 		const input = screen.getByRole("textbox");
 
-		fireEvent.change(input, { target: { value: "Porto Alegre" } });
-		await finishDebounce();
+		submitSearch("Porto Alegre");
+		await screen.findByText("Porto Alegre");
 
 		expect(screen.getByText("Porto Alegre")).toBeInTheDocument();
 		expect(screen.getByText("Rio Grande do Sul, Brasil")).toBeInTheDocument();
@@ -133,6 +128,7 @@ describe("simulações de usuários", () => {
 		);
 		fireEvent.click(screen.getByRole("button", { name: "Favoritar" }));
 		fireEvent.change(input, { target: { value: "" } });
+		fireEvent.click(screen.getByRole("button", { name: "Pesquisar" }));
 
 		expect(
 			screen.getByRole("heading", { name: "Cidades favoritas" }),
@@ -147,19 +143,20 @@ describe("simulações de usuários", () => {
 		const fetchMock = vi.fn().mockResolvedValue(cityResponse([]));
 		vi.stubGlobal("fetch", fetchMock);
 		render(<FormCity />);
-		const input = screen.getByRole("textbox");
 
 		expect(
 			screen.getByText(
-				"Os resultados aparecem automaticamente enquanto você digita.",
+				"A pesquisa acontece automaticamente ou ao pressionar Pesquisar.",
 			),
 		).toBeInTheDocument();
-		fireEvent.change(input, { target: { value: "   " } });
-		await finishDebounce();
+		submitSearch("   ");
 		expect(fetchMock).not.toHaveBeenCalled();
+		expect(
+			screen.getByText("Informe o nome de uma cidade para pesquisar."),
+		).toBeInTheDocument();
 
-		fireEvent.change(input, { target: { value: "Cidade que não existe" } });
-		await finishDebounce();
+		submitSearch("Cidade que não existe");
+		await screen.findByText("Nenhuma cidade encontrada.");
 
 		expect(fetchMock).toHaveBeenCalledOnce();
 		expect(
@@ -183,8 +180,10 @@ describe("simulações de usuários", () => {
 
 		fireEvent.change(input, { target: { value: "<script>" } });
 		fireEvent.change(input, { target: { value: "<script>alert" } });
-		fireEvent.change(input, { target: { value: hostileInput } });
-		await finishDebounce();
+		submitSearch(hostileInput);
+		await screen.findByText(
+			"Não foi possível buscar cidades. Tente novamente em alguns instantes.",
+		);
 
 		expect(fetchMock).toHaveBeenCalledOnce();
 		const requestedUrl = new URL(String(fetchMock.mock.calls[0][0]));
