@@ -21,6 +21,9 @@ export function App() {
 						cinco dias.
 					</p>
 				</div>
+				<span className="y2k-system-status" aria-hidden="true">
+					SISTEMA METEOROLÓGICO // ONLINE
+				</span>
 			</header>
 
 			<main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
